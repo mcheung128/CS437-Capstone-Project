@@ -7,17 +7,16 @@ import csv
 from datetime import datetime
 
 # --------- Config (tweak these if needed) ----------
-CENTER_BOX     = (0.30, 0.70)   # horizontal center window
-CENTER_BOX_V   = (0.25, 0.75)   # vertical center window
+CENTER_BOX     = (0.30, 0.70)   
+CENTER_BOX_V   = (0.25, 0.75)
 MAX_YAW_DEG    = 25
 MAX_PITCH_DEG  = 25
-SMOOTH_FRAMES  = 10              # temporal smoothing window
-MIN_EYE_OPEN   = 0.10           # gate vertical check by eye openness (height/width)
+SMOOTH_FRAMES  = 20
+MIN_EYE_OPEN   = 0.25
 LOG_FILE       = "eye_log.csv"
 LOG_INTERVAL   = 1.0 
 # ---------------------------------------------------
 
-# MediaPipe Face Mesh landmark indices
 L_EYE_LEFT  = 33
 L_EYE_RIGHT = 133
 L_EYE_TOP   = 159
@@ -103,7 +102,7 @@ def main():
     status_hist = []
     last_status = "INIT"
     font = cv.FONT_HERSHEY_SIMPLEX
-
+    last = ""
     with mp_face.FaceMesh(
         max_num_faces=1,
         refine_landmarks=True,
@@ -177,12 +176,10 @@ def main():
             majority = status_hist.count(True) >= (len(status_hist)/2.0)
             last_status = "ON" if majority else "OFF"
 
-            now = time.time()
-            last_log_time = 0
-            last = ""
-            if now - last_log_time >= 1:
-                last = log_status_to_csv("track_log.csv", last_status, last)
-                last = now
+            now = datetime.now().strftime("%H%M%S")
+            
+            last = log_status_to_csv("track_log.csv", last_status, last)
+            last = now
 
 
             cv.putText(frame, f"Status: {last_status}", (20,45), font, 0.8,
